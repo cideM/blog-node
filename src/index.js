@@ -3,7 +3,6 @@ const path = require('path')
 const util = require('util')
 const matter = require('gray-matter')
 const remark = require('remark')
-const emoji = require('remark-emoji')
 const recommended = require('remark-preset-lint-recommended')
 const toHtml = require('remark-html')
 const report = require('vfile-reporter')
@@ -42,7 +41,6 @@ const run = async () => {
         // Markdown -> HTML
         const html = await remark()
           .use(recommended)
-          .use(emoji)
           .use(toHtml)
           .process(content)
 
@@ -58,21 +56,18 @@ const run = async () => {
     })
   )
     .then(slugs => {
-      // TODO: Copy assets
       // Write one .html file per markdown post
       slugs.forEach(async ({ filename, html }) => {
         fs.mkdirSync(path.join(outputPath, 'posts', filename), {
           recursive: true,
         })
+
         fs.writeFileSync(
           path.join(outputPath, 'posts', filename, 'index.html'),
           html
         )
       })
 
-      return slugs
-    })
-    .then(slugs => {
       // Render index.html with links to posts
       const rendered = Mustache.render(indexTemplate, { slugs })
       fs.writeFileSync(path.join(outputPath, 'index.html'), rendered)
